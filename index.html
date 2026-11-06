@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bund Wall Calculator</title>
+<meta name="description" content="SANS 10089-1 bund wall calculator for tank farms – offline">
+<meta name="theme-color" content="#16324f">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Bund Wall">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <img src="icon-192.png" alt="" width="34" height="34">
+    <div><h1>Bund Wall Calculator</h1><small>SANS 10089-1 · <span id="ver"></span></small></div>
+  </div>
+  <div class="seg" role="tablist" aria-label="Mode">
+    <button data-mode="design" class="on">Design</button>
+    <button data-mode="check">Check existing</button>
+  </div>
+</header>
+
+<div class="strip" id="strip"></div>
+
+<main>
+  <!-- TANKS -->
+  <section class="page on" id="pg-tanks">
+    <div class="card" id="check-card" hidden>
+      <h2>Existing bund (internal)</h2>
+      <div class="grid3">
+        <label>Length L (m)<input type="number" inputmode="decimal" step="any" data-k="actual.L"></label>
+        <label>Width W (m)<input type="number" inputmode="decimal" step="any" data-k="actual.W"></label>
+        <label>Height H (m)<input type="number" inputmode="decimal" step="any" data-k="actual.H"></label>
+      </div>
+    </div>
+    <div id="rows"></div>
+    <button class="btn wide ghost" id="add-row">+ Add row of tanks</button>
+    <div class="card">
+      <h2>Spacing (SANS 10089-1 minimums)</h2>
+      <div class="grid2">
+        <label>Tank-to-tank S<sub>tank</sub> (m)<input type="number" inputmode="decimal" step="any" data-k="sTank"></label>
+        <label>Tank-to-bund S<sub>bund</sub> (m)<input type="number" inputmode="decimal" step="any" data-k="sBund"></label>
+      </div>
+      <h3>Provided on site (for compliance check)</h3>
+      <div class="grid2">
+        <label>Tank-to-tank provided (m)<input type="number" inputmode="decimal" step="any" data-k="provided.sTank"></label>
+        <label>Tank-to-bund provided (m)<input type="number" inputmode="decimal" step="any" data-k="provided.sBund"></label>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section class="page" id="pg-results">
+    <div class="card" id="summary"></div>
+    <div class="card"><h2>Compliance verification</h2><div id="checks"></div></div>
+    <div class="card"><h2>Show working</h2><div id="working"></div></div>
+  </section>
+
+  <!-- DRAWINGS -->
+  <section class="page" id="pg-draw">
+    <div class="card draw">
+      <div class="drawhead">
+        <h2>3D tank farm mimic</h2>
+        <div class="mini">
+          <button class="chip" data-view="iso">3D</button>
+          <button class="chip" data-view="front">Front</button>
+          <button class="chip" data-view="end">End</button>
+          <button class="chip" data-view="top">Top</button>
+          <label class="chip"><input type="checkbox" id="spill" checked> Spill</label>
+        </div>
+      </div>
+      <div class="viewer" id="v3d" title="Drag to rotate"></div>
+      <p class="hint">Drag to rotate. Everything is drawn to scale. The blue layer is where the largest tank's spill settles. The largest tank has a red rim.</p>
+    </div>
+    <div class="card draw"><div class="viewer" id="vplan"></div></div>
+    <div class="card draw"><div class="viewer" id="velev"></div></div>
+  </section>
+
+  <!-- MORE -->
+  <section class="page" id="pg-more">
+    <div class="card">
+      <h2>Project</h2>
+      <div class="grid2">
+        <label>Project name<input type="text" data-k="info.project"></label>
+        <label>Client<input type="text" data-k="info.client"></label>
+        <label>Site<input type="text" data-k="info.site"></label>
+        <label>Prepared by<input type="text" data-k="info.by"></label>
+        <label>Date<input type="date" data-k="info.date"></label>
+      </div>
+      <div class="btns">
+        <button class="btn" id="pdf">📄 PDF report</button>
+        <button class="btn ghost" id="save">💾 Save project</button>
+        <button class="btn ghost" id="new">New project</button>
+      </div>
+      <div id="projects"></div>
+      <div class="btns">
+        <button class="btn ghost" id="export">Export JSON</button>
+        <label class="btn ghost">Import JSON<input type="file" id="import" accept=".json,application/json" hidden></label>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Settings</h2>
+      <label>Required containment (% of largest tank)<input type="number" inputmode="decimal" step="any" data-k="factor"></label>
+      <label>Tank displacement
+        <select data-k="disp">
+          <option value="all">Subtract ALL tank footprints (as spreadsheet)</option>
+          <option value="exceptLargest">Subtract all tanks EXCEPT the largest</option>
+        </select>
+      </label>
+      <label>Wall thickness for drawings (m)<input type="number" inputmode="decimal" step="any" data-k="wallT"></label>
+      <div class="btns">
+        <button class="btn ghost" id="theme">🌓 Theme</button>
+        <button class="btn ghost" id="selftest">✔ Run self-test</button>
+      </div>
+      <div id="testout"></div>
+    </div>
+    <div class="card">
+      <h2>App</h2>
+      <div class="btns">
+        <button class="btn" id="install" hidden>⬇ Install app</button>
+        <button class="btn ghost" id="update">⟳ Check for update</button>
+      </div>
+      <p class="hint" id="updmsg"></p>
+      <p class="hint" id="iosmsg" hidden>On iPhone: tap Share ⎋ then "Add to Home Screen".</p>
+    </div>
+  </section>
+  <p class="foot">Verify against current SANS 10089-1 before final design.</p>
+</main>
+
+<nav class="tabs">
+  <button data-pg="tanks" class="on"><span>🛢️</span>Tanks</button>
+  <button data-pg="results"><span>📐</span>Results</button>
+  <button data-pg="draw"><span>🧊</span>Drawings</button>
+  <button data-pg="more"><span>⚙️</span>More</button>
+</nav>
+<div class="toast" id="toast"></div>
+
+<script src="calc.js"></script>
+<script src="draw.js"></script>
+<script src="pdf.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

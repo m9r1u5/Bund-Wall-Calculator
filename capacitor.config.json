@@ -1,0 +1,6 @@
+{
+  "appId": "com.m9r1u5.bundwall",
+  "appName": "Bund Wall Calculator",
+  "webDir": "www",
+  "android": { "allowMixedContent": false }
+}
